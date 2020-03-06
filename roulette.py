@@ -67,28 +67,28 @@ class BinBuilder:
     
     def build_straight_bet(self, wheel: Wheel, outcome: Outcome):
         """Generates straight bets for individual bins"""
-        wheel = wheel()
+        
         
         for n in range(0,38):
             if n == 37:
-                outcome = outcome('00', 35)
-                wheel.add_outcome(n, {outcome})
+                outcome_straight = outcome('00', 35)
+                wheel.add_outcome(n, {outcome_straight})
             else:
-                outcome = outcome(f'{n}', 35)
-                wheel.add_outcome(n,{outcome})
+                outcome_straight = outcome(f'{n}', 35)
+                wheel.add_outcome(n,{outcome_straight})
 
 
     def build_split_bet(self, wheel: Wheel, outcome: Outcome):
         """Generates split bet for bins"""
         bins_set = {i:set() for i in range(1,37)}
-        wheel = wheel()
+        
 
         for row in range(12):
             #get elements in first column
             n_column_1 = 3*row + 1
             #split bet on column 1-2
-            split_left = {n_column_1, n_column_1+1}
-            outcome_1 = outcome(f'{split_left}', 17)
+            split_left = [n_column_1, n_column_1+1]
+            outcome_1 = outcome(f'{split_left[0]}-{split_left[1]}', 17)
             #add outcome objects to sets
             bins_set[n_column_1].add(outcome_1)
             bins_set[n_column_1+1].add(outcome_1)
@@ -96,18 +96,17 @@ class BinBuilder:
             #get elements for  column 2
             n_column_2 = 3*row + 2
             #split bets for column 2-3
-            split_right = {n_column_2, n_column_2+1}
-            outcome_2 = outcome(f'{split_right}', 17)
+            split_right = [n_column_2, n_column_2+1]
+            outcome_2 = outcome(f'{split_right[0]}-{split_right[1]}', 17)
             bins_set[n_column_2].add(outcome_2)
             bins_set[n_column_2+1].add(outcome_2)
 
-        for n in range(1, 33):
+        for n in range(1, 34):
             #create up-down splitbet
-            split_updown = {n, n+3}
-            outcome = outcome(f'{split_updown}', 17)
-            #add out outcome objects to set
-            bins_set[n].add(outcome)
-            bins_set[n+3].add(outcome)
+            split_updown = [n, n+3]
+            outcome_splitupdown = outcome(f'{split_updown[0]}-{split_updown[1]}', 17)
+            bins_set[n].add(outcome_splitupdown)
+            bins_set[n+3].add(outcome_splitupdown)
 
         for i in range(1,37):
             wheel.add_outcome(i, bins_set[i])
@@ -116,15 +115,15 @@ class BinBuilder:
     def build_street_bet(self, wheel: Wheel, outcome: Outcome):
         """Generate street for individual bins"""
         bins_set = {i:set() for i in range(1,37)}
-        wheel = wheel()
 
         for row in range(12):
             n = 3*row + 1
-            street = {n, n+1, n+2}
-            outcome = outcome(f'{street}street', 11)
-            bins_set[n].add(outcome)
-            bins_set[n+1].add(outcome)
-            bins_set[n+2].add(outcome)
+            street = [n, n+1, n+2]
+            outcome_street = outcome(f'{street[0]}-{street[1]}-{street[2]}',
+                                      11)
+            
+            for strt in street:
+                bins_set[strt].add(outcome_street)
         
         for i in range(1,37):
             wheel.add_outcome(i, bins_set[i])
@@ -132,19 +131,20 @@ class BinBuilder:
     def build_corner_bets(self, wheel: Wheel, outcome: Outcome):
         """Generates corner bets"""
         bins_set = {i:set() for i in range(1,37)}
-        wheel = wheel()
 
         for row in range(11):
             n_1_2 = 3*row + 1
-            corner_1_2 = {n_1_2, n_1_2+1, n_1_2+3, n_1_2+4}
-            outcome_1_2 = outcome(f'{corner_1_2}corner', 8)
+            corner_1_2 = [n_1_2, n_1_2+1, n_1_2+3, n_1_2+4]
+            outcome_1_2 = outcome(f'{corner_1_2[0]}-{corner_1_2[1]}-{corner_1_2[2]}-{corner_1_2[3]}', 
+                                  8)
             
             for  i in corner_1_2:
                 bins_set[i].add(outcome_1_2)
         
             n_2_3 = 3*row + 2
-            corner_2_3 = {n_2_3, n_2_3+1, n_2_3+3, n_2_3+4}
-            outcome_2_3 = outcome(f'{corner_2_3}corner', 8)
+            corner_2_3 = [n_2_3, n_2_3+1, n_2_3+3, n_2_3+4]
+            outcome_2_3 = outcome(f'{corner_2_3[0]}-{corner_2_3[1]}-{corner_2_3[2]}-{corner_2_3[3]}', 
+                                  8)
 
             for i in corner_2_3:
                 bins_set[i].add(outcome_2_3)
@@ -155,28 +155,30 @@ class BinBuilder:
 
     def build_line_bets(self, wheel: Wheel, outcome: Outcome):
         bins_set = {i:set() for i in range(1,37)}
-        wheel = wheel()
+       
             
         for row in range(11):
             n = 3*row + 1
-            line_bet = {n, n+1, n+2, n+3, n+4, n+5}
-            outcome = outcome(f'{line_bet}line', 5)
+            line_bet = [n, n+1, n+2, n+3, n+4, n+5]
+            outcome_line = outcome(
+                f'{line_bet[0]}-{line_bet[1]}-{line_bet[2]}-{line_bet[3]}-{line_bet[4]}-{line_bet[5]}', 
+                                   5)
             for i in line_bet:
-                bins_set[i].add(outcome)
+                bins_set[i].add(outcome_line)
         
         for i in range(1,37):
             wheel.add_outcome(i, bins_set[i])
     
 
-    def build_dozen_bets(self, wheel: wheel, outcome: Outcome):
+    def build_dozen_bets(self, wheel: Wheel, outcome: Outcome):
         bins_set = {i:set() for i in range(1,37)}
-        wheel = wheel()
+       
         for n in range(3):
             n_dozen = n + 1
-            outcome = outcome(f'{n_dozen}dozen', 2)
+            outcome_dozen = outcome(f'{n_dozen}-dozen', 2)
             for i in range(12):
                 bin_num = 12*n + i + 1
-                bins_set[i].add(bin_num, outcome)
+                bins_set[bin_num].add(outcome_dozen)
         
         for i in range(1,37):
             wheel.add_outcome(i, bins_set[i])
@@ -184,15 +186,14 @@ class BinBuilder:
 
     def build_column_bets(self, wheel: Wheel, outcome: Outcome):
         bins_set = {i:set() for i in range(1,37)}
-        wheel = wheel()
             
         for n in range(3):
             column = n+1
-            outcome = outcome(f'{column}column', 2)
+            outcome_column = outcome(f'{column}-column', 2)
             
             for i in range(12):
                 rows = 3*i + n + 1
-                bins_set[rows].add(outcome)
+                bins_set[rows].add(outcome_column)
         
         for i in range(1, 37):
             wheel.add_outcome(i, bins_set[i])
@@ -200,7 +201,7 @@ class BinBuilder:
 
     def build_even_money_bets(self, wheel: Wheel, outcome: Outcome):
         bins_set = {i:set() for i in range(1,37)}
-        wheel = wheel()
+       
         outcome_red = outcome('Red', 1)
         outcome_black = outcome('Black', 1)
         outcome_even = outcome('Even', 1)
@@ -230,8 +231,8 @@ class BinBuilder:
     def build_five_bet(self, wheel: Wheel, outcome: Outcome):
         five_bins = {0, 37, 1, 2, 3}
         five = outcome("00-0-1-2-3", 6)
-        wheel = wheel()
+       
         
         for n in five_bins:
-            wheel.add_outcome(n, five)
+            wheel.add_outcome(n, {five})
                 
