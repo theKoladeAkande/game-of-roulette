@@ -1,5 +1,8 @@
 import os
 from random import Random
+from dataclasses import dataclass
+import collections
+
 class Outcome:
     
     """ Contains a single outcome on which 
@@ -32,7 +35,7 @@ class Outcome:
         return self.odds * amount
 
 
-class Bin(frozenset):
+class Bin(set):
     
     """contains a collection of Outcome instances which
     reflect the winning bets that are paid for a particular
@@ -42,23 +45,32 @@ class Bin(frozenset):
 class Wheel: 
     def __init__(self):
 
-        self.bins = tuple(Bin for _ in range(38))
+        self.bins = tuple(Bin() for _ in range(38))
         self.randgenerator = Random()
+        self.all_outcomes = {}
     
     def add_outcome(self, number, outcome):
-
-        temp_bins = [*self.bins]
-        temp_bins[number] = temp_bins[number](outcome)
-        self.bins = tuple(temp_bins)
+        if isinstance(outcome, set):
+            for _outcome in outcome:
+                self.all_outcomes[_outcome.name] = _outcome
+            self.bins[number].update(outcome)
+        else:
+            self.all_outcomes[outcome.name] = outcome
+            self.bins[number].add(outcome)
 
         
     def choose(self):
         """ use random generator to simulate wheel spining"""
         return self.randgenerator.choice(self.bins)
         
-    def get(self, bin_num):
+    def get_bin(self, bin_num):
         return  self.bins[bin_num]
-
+    
+        
+    def get_outcome(self, name: str):
+        return self.all_outcomes[name]
+        
+        
 
 class BinBuilder:
     """Builds bin instances for various outcomes"""
@@ -72,10 +84,10 @@ class BinBuilder:
         for n in range(0,38):
             if n == 37:
                 outcome_straight = outcome('00', 35)
-                wheel.add_outcome(n, {outcome_straight})
+                wheel.add_outcome(n, outcome_straight)
             else:
                 outcome_straight = outcome(f'{n}', 35)
-                wheel.add_outcome(n,{outcome_straight})
+                wheel.add_outcome(n,outcome_straight)
 
 
     def build_split_bet(self, wheel: Wheel, outcome: Outcome):
@@ -234,5 +246,22 @@ class BinBuilder:
        
         
         for n in five_bins:
-            wheel.add_outcome(n, {five})
-                
+            wheel.add_outcome(n, five)
+
+
+@dataclass
+class Bet:
+    """ Associates an amount and an Outcome"""
+    amount: int
+    outcome: Outcome
+    
+    
+    def win_amount(self):
+        return self.outcome.win_amount(self.amount)
+    
+    def lose_amount(self):
+        return self.amount
+    
+    def __str__(self):
+        str_outcome = str(self.outcome)
+        return f'{self.amount} on {str_outcome}'
