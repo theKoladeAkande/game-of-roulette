@@ -265,3 +265,107 @@ class Bet:
     def __str__(self):
         str_outcome = str(self.outcome)
         return f'{self.amount} on {str_outcome}'
+    
+
+class InvalidBet(Exception):
+    pass
+
+
+class Table:
+    """contains all the Bet instances created by a Player object"""
+    def __init__(self, *bets):
+        self.bets = [*bets]
+        self.limit = None
+        self.minimum = None
+        self.index = 0
+
+    
+    def __iter__(self):
+        return self
+    
+   
+    def __next__(self):
+        if self.index == len(self.bets):
+            raise StopIteration
+        else:
+            item = self.bets[self.index]
+            self.index += 1
+            return item
+            
+        
+    def __repr__(self):
+        all_bets = [bet() for bet in self.bets]
+        all_bets = tuple(all_bets)
+        return f'Table{all_bets}'
+    
+    
+    def __str__(self):
+        if self.bets:
+            all_bets =[str(bet) for bet in self.bets]
+            return f'all current bets are {all_bets}'
+        else:
+            return 'No current bets'
+
+    
+    def place_bet(self, bet: Bet):
+        if not isinstance(bet, Bet):
+            raise TypeError(f'{bet} not instance of Bet')
+        self.bets.append(bet)        
+    
+    def is_valid(self):
+        all_bets_amount = [bet.amount for bet in self.bets]
+        if sum(all_bets_amount) > self.limit: 
+            raise InvalidBet(f'The total bet amount is greater than table limit {self.limit}')
+        if any(map(lambda x: x < self.minimum, all_bets_amount)):
+            raise InvalidBet(f'Bet amounts should not be less than tabel minimum {self.minmum}')
+    
+
+class Passenger57:
+    
+    def __init__(self, table: Table, wheel: Wheel):
+        self.table = table
+        self.wheel = wheel
+        self.black = wheel.get_outcome('Black')
+        self.bet = Bet(200, self.black)
+    
+    def place_bet(self):
+        table.place_bet(self.bet) 
+        
+           
+    def win(self, bet: Bet):
+        if bet == self.bet:
+            print('You win')
+    
+    
+    def lose(self, bet: Bet):
+        if bet.outcome == self.bet.outcome:
+            print('You lose')
+
+
+class Game:
+    """manages the sequence of actions that defines the game of Roulette"""
+    
+    def __init__(self, wheel: Wheel, table: Table):
+        self.wheel = wheel
+        self.table = table 
+        
+    def cycle(self, player: Passenger57):
+        player.place_bet()
+        winning_bets = self.wheel.choose()
+        
+        bets = iter(self.table)
+        for bet in bets:
+            if bet.outcome in winning_bets:
+                player.win(bet)
+            else:
+                player.lose(bet)
+
+
+if __name__ == "__main__":
+    wheel = Wheel()
+    table = Table()
+    bin_builder = BinBuilder()
+    bin_builder.build_even_money_bets(wheel, Outcome)
+    player57 = Passenger57(table, wheel)
+    game = Game(wheel, table)
+    game.cycle(player57)
